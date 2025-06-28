@@ -29,4 +29,4 @@ TechForce Services is migrating the on-premise Kimai timesheet application to a 
 
 ## 5. Architecture Diagram
 
-![Kimai Architecture Diagram](kimai-architecture.png)
+![Kimai Architecture Diagram](kimai-architecture.drawio.png)
