@@ -1,0 +1,14 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+crash.log
+
+# Logs
+*.log
+
+# System
+.DS_Store
+
+# VS Code
+.vscode/
