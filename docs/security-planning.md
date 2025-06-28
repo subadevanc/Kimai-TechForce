@@ -43,20 +43,9 @@
 - All containers are scanned for vulnerabilities (use tools like Trivy).
 - TLS termination at Load Balancer (HTTPS enforced).
 - Auto security patching enabled for Linux VMs.
-
 ---
 
-## 🕵️ 6. Logging and Monitoring
-- System and application logs forwarded to centralized logging (CloudWatch or ELK).
-- IAM activities monitored using AWS CloudTrail or equivalent.
-- Grafana alerts for:
-  - CPU > 80% for 5 min
-  - Disk usage > 90%
-  - Failed health checks x3
-
----
-
-## 🧪 7. Security Testing
+## 🧪 6. Security Testing
 - Run regular `nmap` scans to confirm open ports match design.
 - Vulnerability scans using tools like:
   - OpenVAS
@@ -65,7 +54,7 @@
 
 ---
 
-## ✅ 8. Final Checklist
+## ✅ 9. Final Checklist
 - [ ] No hardcoded secrets
 - [ ] Private subnets in use for app and DB
 - [ ] WAF active on Load Balancer
