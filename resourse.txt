@@ -1,0 +1,6 @@
+https://youtu.be/7xngnjfIlK4?si=UyQ81OycEDYgqwCK = TerraForm
+https://youtu.be/eZeNIakuqbc?si=mu5aSsP9Q_MIoqCE = AWS Basic
+https://youtu.be/fqMOX6JJhGo?si=Rs1l3zUw4EgQeibG = Docker
+https://youtu.be/6YZvp2GwT0A?si=b2NCXRGxurOSXkhR = jenkins
+https://youtu.be/h4Sl21AKiDg?si=k8Y_WnlJhqXLy7wG = Security
+
