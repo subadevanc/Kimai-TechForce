@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-       IMAGE_NAME = 'subadevanc/kimai'
+       IMAGE_NAME = 'sh4dow27/kimai'
        IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
