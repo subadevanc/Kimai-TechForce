@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'yourdockerhub/kimai'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+       IMAGE_NAME = 'subadevanc/kimai'
+       IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
