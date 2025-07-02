@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'yourdockerhub/kimai'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG ./docker'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'echo "Running tests..."'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME:$IMAGE_TAG
+                    """
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    def tfOutputs = readJSON file: 'terraform/tf_outputs.json'
+                    def targetIP = tfOutputs.app_server_private_ip.value
+
+                    sh """
+                        ssh -o StrictHostKeyChecking=no -i ~/.ssh/your-key.pem ubuntu@${targetIP} \\
+                        'docker pull $IMAGE_NAME:$IMAGE_TAG && docker stop kimai || true && docker rm kimai || true && docker run -d --name kimai -p 80:80 $IMAGE_NAME:$IMAGE_TAG'
+                    """
+                }
+            }
+        }
+    }
+}
