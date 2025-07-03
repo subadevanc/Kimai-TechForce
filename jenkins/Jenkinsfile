@@ -3,15 +3,13 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'subadevanc/kimai'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
-        REMOTE_USER = 'ec2-user'
-        REMOTE_HOST = '16.171.197.232'
-        SSH_CRED_ID = 'ssh-key-id'
-        DOCKER_CRED_ID = 'docker-hub-creds'
+        IMAGE_TAG = 'latest'
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-creds')
+        SSH_CREDENTIALS = 'ssh-key-id'
+        APP_SERVER = 'ec2-user@16.171.197.232'  // Change to your EC2 IP if needed
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -20,37 +18,30 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG ./docker'
+                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ./docker"
             }
         }
 
         stage('Test') {
             steps {
-                sh 'echo "Running simulated tests..."'
+                bat 'echo Simulated test...'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "$DOCKER_CRED_ID", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push $IMAGE_NAME:$IMAGE_TAG
-                    """
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat 'docker push %IMAGE_NAME%:%IMAGE_TAG%'
                 }
             }
         }
 
         stage('Deploy to EC2') {
             steps {
-                sshagent(credentials: ["$SSH_CRED_ID"]) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
-                            docker pull $IMAGE_NAME:$IMAGE_TAG &&
-                            docker stop kimai || true &&
-                            docker rm kimai || true &&
-                            docker run -d -p 8001:80 --name kimai $IMAGE_NAME:$IMAGE_TAG
-                        '
+                sshagent (credentials: ['ssh-key-id']) {
+                    bat """
+                        ssh -o StrictHostKeyChecking=no %APP_SERVER% "docker pull %IMAGE_NAME%:%IMAGE_TAG% && docker stop kimai || true && docker rm kimai || true && docker run -d -p 8001:80 --name kimai %IMAGE_NAME%:%IMAGE_TAG%"
                     """
                 }
             }
