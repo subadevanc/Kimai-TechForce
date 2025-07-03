@@ -1,12 +1,16 @@
 pipeline {
     agent any
 
-   environment {
-    IMAGE_NAME = 'sh4dow27/kimai'      // not subadevanc
-    IMAGE_TAG = "${env.BUILD_NUMBER}"
-}
+    environment {
+        IMAGE_NAME = 'subadevanc/kimai'      // Replace with your DockerHub repo
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        REMOTE_USER = 'ec2-user'
+        REMOTE_HOST = '16.171.197.232'       // Replace with your EC2 IP
+        SSH_CRED_ID = 'ssh-key-id'           // Replace with your Jenkins SSH Credential ID
+    }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -15,30 +19,39 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %IMAGE_NAME%:%IMAGE_TAG% ./docker'
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG ./docker'
             }
         }
 
-        stage('Test') {
+        stage('Simulated Test') {
             steps {
-                bat 'echo Simulated test...'
+                sh 'echo "Running simulated tests..."'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat """
-                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    docker push %IMAGE_NAME%:%IMAGE_TAG%
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $IMAGE_NAME:$IMAGE_TAG
                     """
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to App Server') {
             steps {
-                bat 'echo Deployment steps go here (use PowerShell or psexec for SSH if needed)'
+                sshagent(credentials: ["$SSH_CRED_ID"]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
+                            docker pull $IMAGE_NAME:$IMAGE_TAG &&
+                            docker stop kimai || true &&
+                            docker rm kimai || true &&
+                            docker run -d -p 8001:80 --name kimai $IMAGE_NAME:$IMAGE_TAG
+                        '
+                    """
+                }
             }
         }
     }
