@@ -2,20 +2,18 @@ pipeline {
     agent any
 
     environment {
-        SSH_CREDENTIALS = 'ssh-key-id'
         APP_SERVER = 'ec2-user@16.171.197.232'
+        SSH_KEY_PATH = 'C:\\Users\\karun\\Downloads\\phase2.pem'   // ✅ Correct path to your PEM file
     }
 
     stages {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent (credentials: [SSH_CREDENTIALS]) {
-                    bat """
-                        ssh -o StrictHostKeyChecking=no %APP_SERVER% ^
-                        "docker pull kimai/kimai2:apache && docker stop kimai || true && docker rm kimai || true && docker run -d -p 8001:80 --name kimai kimai/kimai2:apache"
-                    """
-                }
+                bat """
+                    ssh -i "%SSH_KEY_PATH%" -o StrictHostKeyChecking=no %APP_SERVER% ^
+                    "docker pull kimai/kimai2:apache && docker stop kimai || true && docker rm kimai || true && docker run -d -p 8001:80 --name kimai kimai/kimai2:apache"
+                """
             }
         }
 
