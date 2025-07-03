@@ -2,52 +2,18 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'subadevanc/kimai'
-        IMAGE_TAG = 'latest'
-        DOCKERHUB_CREDENTIALS = credentials('docker-hub-creds')
         SSH_CREDENTIALS = 'ssh-key-id'
         APP_SERVER = 'ec2-user@16.171.197.232'
     }
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ./docker"
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'echo Simulated test...'
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-                    bat 'docker push %IMAGE_NAME%:%IMAGE_TAG%'
-                }
-            }
-        }
-
         stage('Deploy to EC2') {
             steps {
-                sshagent (credentials: ['ssh-key-id']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${APP_SERVER} '
-                            docker pull ${IMAGE_NAME}:${IMAGE_TAG} &&
-                            docker stop kimai || true &&
-                            docker rm kimai || true &&
-                            docker run -d -p 8001:80 --name kimai ${IMAGE_NAME}:${IMAGE_TAG}
-                        '
+                sshagent (credentials: [SSH_CREDENTIALS]) {
+                    bat """
+                        ssh -o StrictHostKeyChecking=no %APP_SERVER% ^
+                        "docker pull kimai/kimai2:apache && docker stop kimai || true && docker rm kimai || true && docker run -d -p 8001:80 --name kimai kimai/kimai2:apache"
                     """
                 }
             }
