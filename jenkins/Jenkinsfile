@@ -1,10 +1,10 @@
 pipeline {
     agent any
 
-    environment {
-       IMAGE_NAME = 'sh4dow27/kimai'
-       IMAGE_TAG = "${env.BUILD_NUMBER}"
-    }
+   environment {
+    IMAGE_NAME = 'sh4dow27/kimai'      // not subadevanc
+    IMAGE_TAG = "${env.BUILD_NUMBER}"
+}
 
     stages {
         stage('Checkout') {
