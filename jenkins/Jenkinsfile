@@ -2,16 +2,17 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'subadevanc/kimai'      // Replace with your DockerHub repo
+        IMAGE_NAME = 'subadevanc/kimai'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         REMOTE_USER = 'ec2-user'
-        REMOTE_HOST = '16.171.197.232'       // Replace with your EC2 IP
-        SSH_CRED_ID = 'ssh-key-id'           // Replace with your Jenkins SSH Credential ID
+        REMOTE_HOST = '16.171.197.232'
+        SSH_CRED_ID = 'ssh-key-id'
+        DOCKER_CRED_ID = 'docker-hub-creds'
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 checkout scm
             }
@@ -23,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('Simulated Test') {
+        stage('Test') {
             steps {
                 sh 'echo "Running simulated tests..."'
             }
@@ -31,7 +32,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: "$DOCKER_CRED_ID", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                         docker push $IMAGE_NAME:$IMAGE_TAG
@@ -40,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to App Server') {
+        stage('Deploy to EC2') {
             steps {
                 sshagent(credentials: ["$SSH_CRED_ID"]) {
                     sh """
