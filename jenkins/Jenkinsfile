@@ -6,10 +6,11 @@ pipeline {
         IMAGE_TAG = 'latest'
         DOCKERHUB_CREDENTIALS = credentials('docker-hub-creds')
         SSH_CREDENTIALS = 'ssh-key-id'
-        APP_SERVER = 'ec2-user@16.171.197.232'  // Change to your EC2 IP if needed
+        APP_SERVER = 'ec2-user@16.171.197.232'
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -37,15 +38,20 @@ pipeline {
             }
         }
 
-       stage('Deploy to EC2') {
-    steps {
-        sshCommand remote: remote, command: '''
-            docker pull kimai/kimai2:apache
-            docker stop kimai || true && docker rm kimai || true
-            docker run -d -p 8001:8001 --name kimai kimai/kimai2:apache
-        '''
-    }
-}
+        stage('Deploy to EC2') {
+            steps {
+                sshagent (credentials: ['ssh-key-id']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${APP_SERVER} '
+                            docker pull ${IMAGE_NAME}:${IMAGE_TAG} &&
+                            docker stop kimai || true &&
+                            docker rm kimai || true &&
+                            docker run -d -p 8001:80 --name kimai ${IMAGE_NAME}:${IMAGE_TAG}
+                        '
+                    """
+                }
+            }
         }
+
     }
 }
