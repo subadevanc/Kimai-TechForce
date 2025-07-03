@@ -37,14 +37,15 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2') {
-            steps {
-                sshagent (credentials: ['ssh-key-id']) {
-                    bat """
-                        ssh -o StrictHostKeyChecking=no %APP_SERVER% "docker pull %IMAGE_NAME%:%IMAGE_TAG% && docker stop kimai || true && docker rm kimai || true && docker run -d -p 8001:80 --name kimai %IMAGE_NAME%:%IMAGE_TAG%"
-                    """
-                }
-            }
+       stage('Deploy to EC2') {
+    steps {
+        sshCommand remote: remote, command: '''
+            docker pull kimai/kimai2:apache
+            docker stop kimai || true && docker rm kimai || true
+            docker run -d -p 8001:8001 --name kimai kimai/kimai2:apache
+        '''
+    }
+}
         }
     }
 }
