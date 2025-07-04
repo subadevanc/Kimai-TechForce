@@ -1,21 +1,46 @@
 pipeline {
-    agent any
-
-    environment {
-        APP_SERVER = 'ec2-user@16.171.197.232'
-        SSH_KEY_PATH = 'C:\\Users\\karun\\Downloads\\phase2.pem'   // ✅ Correct path to your PEM file
+  agent any
+  environment {
+    REGISTRY = 'docker.io'
+    REPO = 'subadevanc/kimai'
+    IMAGE = "${REGISTRY}/${REPO}:${BUILD_NUMBER}"
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/subadevanc/Kimai-TechForce.git'
+      }
     }
-
-    stages {
-
-        stage('Deploy to EC2') {
-            steps {
-                bat """
-                    ssh -i "%SSH_KEY_PATH%" -o StrictHostKeyChecking=no %APP_SERVER% ^
-                    "docker pull kimai/kimai2:apache && docker stop kimai || true && docker rm kimai || true && docker run -d -p 8001:80 --name kimai kimai/kimai2:apache"
-                """
-            }
+    stage('Build') {
+      steps {
+        sh 'docker build -t $IMAGE ./docker'
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'echo "Running simulated tests..."'
+      }
+    }
+    stage('Push') {
+      steps {
+        withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
+          sh 'echo $DOCKER_TOKEN | docker login -u subadevanc --password-stdin'
+          sh 'docker push $IMAGE'
         }
-
+      }
     }
+    stage('Deploy') {
+      steps {
+        sh '''
+          echo "Deploying to server..."
+          ssh -o StrictHostKeyChecking=no ec2-user@YOUR_BASTION_PUBLIC_IP "
+            docker pull $IMAGE &&
+            docker stop kimai || true &&
+            docker rm kimai || true &&
+            docker run -d --name kimai -p 80:80 $IMAGE
+          "
+        '''
+      }
+    }
+  }
 }
