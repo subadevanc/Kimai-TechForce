@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         REGISTRY = 'docker.io'
-        REPO = 'subadevanc/kimai'
+        REPO = 'kalaisk/kimai'
         IMAGE = "${REGISTRY}/${REPO}:${BUILD_NUMBER}"
     }
     stages {
