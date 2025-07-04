@@ -7,8 +7,8 @@ RUN apk add --no-cache git unzip
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
+RUN rm -rf /var/www/*
 RUN git clone https://github.com/kevinpapst/kimai2.git .
-RUN composer install --no-dev --optimize-autoloader
 
 # Stage 2 - Production
 FROM php:8.2-fpm-alpine
