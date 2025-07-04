@@ -26,7 +26,7 @@ pipeline {
               withCredentials([string(credentialsId: 'dockerhub-pat', variable: 'DOCKER_TOKEN')]) {
                  bat '''
                  echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin
-                 docker push %IMAGE%
+                 docker push docker.io/kalaisk/kimai:${env.BUILD_NUMBER}
                  '''
             }
         }
