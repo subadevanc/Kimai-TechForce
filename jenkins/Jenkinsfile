@@ -25,7 +25,7 @@ pipeline {
             steps {
               withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
                  bat '''
-                 echo %DOCKER_TOKEN% | docker login -u subadevanc --password-stdin
+                 echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin
                  docker push %IMAGE%
                  '''
             }
