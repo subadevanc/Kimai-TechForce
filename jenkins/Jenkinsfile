@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Push') {
             steps {
-              withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
+              withCredentials([string(credentialsId: 'dockerhub-pat', variable: 'DOCKER_TOKEN')]) {
                  bat '''
                  echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin
                  docker push %IMAGE%
