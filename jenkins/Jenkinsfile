@@ -1,46 +1,40 @@
 pipeline {
-  agent any
-  environment {
-    REGISTRY = 'docker.io'
-    REPO = 'subadevanc/kimai'
-    IMAGE = "${REGISTRY}/${REPO}:${BUILD_NUMBER}"
-  }
-  stages {
-    stage('Checkout') {
-      steps {
-        git branch: 'main', url: 'https://github.com/subadevanc/Kimai-TechForce.git'
-      }
+    agent any
+    environment {
+        REGISTRY = 'docker.io'
+        REPO = 'subadevanc/kimai'
+        IMAGE = "${REGISTRY}/${REPO}:${BUILD_NUMBER}"
     }
-    stage('Build') {
-      steps {
-        sh 'docker build -t $IMAGE ./docker'
-      }
-    }
-    stage('Test') {
-      steps {
-        sh 'echo "Running simulated tests..."'
-      }
-    }
-    stage('Push') {
-      steps {
-        withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
-          sh 'echo $DOCKER_TOKEN | docker login -u subadevanc --password-stdin'
-          sh 'docker push $IMAGE'
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/subadevanc/Kimai-TechForce.git'
+            }
         }
-      }
+        stage('Build') {
+            steps {
+                bat 'docker build -t %IMAGE% ./docker'
+            }
+        }
+        stage('Test') {
+            steps {
+                bat 'echo Running simulated tests...'
+            }
+        }
+        stage('Push') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
+                    bat '''
+                    echo %DOCKER_TOKEN% | docker login -u subadevanc --password-stdin
+                    docker push %IMAGE%
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                bat 'echo Deploy step: Consider using a Linux Jenkins agent for SSH deployment.'
+            }
+        }
     }
-    stage('Deploy') {
-      steps {
-        sh '''
-          echo "Deploying to server..."
-          ssh -o StrictHostKeyChecking=no ec2-user@YOUR_BASTION_PUBLIC_IP "
-            docker pull $IMAGE &&
-            docker stop kimai || true &&
-            docker rm kimai || true &&
-            docker run -d --name kimai -p 80:80 $IMAGE
-          "
-        '''
-      }
-    }
-  }
 }
