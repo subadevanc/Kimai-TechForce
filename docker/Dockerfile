@@ -1,16 +1,35 @@
-# Stage 1
-FROM php:8.1-apache AS builder
-WORKDIR /var/www/html
-RUN apt-get update && apt-get install -y unzip git zip curl libicu-dev libonig-dev libzip-dev \
-    && docker-php-ext-install intl pdo pdo_mysql zip
-RUN git clone https://github.com/kevinpapst/kimai2.git . \
-    && curl -sS https://getcomposer.org/installer | php && php composer.phar install --no-dev
+# Stage 1 - Builder
+FROM php:8.2-fpm-alpine AS builder
 
-# Stage 2
-FROM php:8.1-apache
-COPY --from=builder /var/www/html /var/www/html
-RUN a2enmod rewrite && useradd -m kimai
+RUN apk add --no-cache git unzip
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+RUN git clone https://github.com/kevinpapst/kimai2.git .
+RUN composer install --no-dev --optimize-autoloader
+
+# Stage 2 - Production
+FROM php:8.2-fpm-alpine
+
+RUN apk add --no-cache nginx supervisor
+
+# Create non-root user
+RUN addgroup -S kimai && adduser -S kimai -G kimai
+
+WORKDIR /var/www
+COPY --from=builder /var/www /var/www
+
+# You can add custom nginx/supervisor configs if needed
+COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY ./supervisord.conf /etc/supervisord.conf
+
+RUN chown -R kimai:kimai /var/www
+
 USER kimai
-HEALTHCHECK --interval=30s CMD curl -f http://localhost || exit 1
-EXPOSE 80
-CMD ["apache2-foreground"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
+  CMD wget -q --spider http://localhost || exit 1
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
