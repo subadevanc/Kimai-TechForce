@@ -21,9 +21,8 @@ RUN addgroup -S kimai && adduser -S kimai -G kimai
 WORKDIR /var/www
 COPY --from=builder /var/www /var/www
 
-# You can add custom nginx/supervisor configs if needed
-#COPY ./nginx.conf /etc/nginx/nginx.conf
-#COPY ./supervisord.conf /etc/supervisord.conf
+# Copy supervisord.conf into container
+COPY ./supervisord.conf /etc/supervisord.conf
 
 RUN chown -R kimai:kimai /var/www
 
