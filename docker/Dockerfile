@@ -7,6 +7,10 @@ RUN apk add --no-cache git unzip
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
+
+# Clear directory first
+RUN rm -rf /var/www/*
+
 RUN git clone https://github.com/kevinpapst/kimai2.git .
 
 RUN composer install --no-interaction
