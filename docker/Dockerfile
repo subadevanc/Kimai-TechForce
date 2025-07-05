@@ -21,14 +21,13 @@ RUN addgroup -S kimai && adduser -S kimai -G kimai
 WORKDIR /var/www
 COPY --from=builder /var/www /var/www
 
-# Copy supervisord.conf into container
-COPY ./supervisord.conf /etc/supervisord.conf
+# Copy supervisord config
+COPY supervisord.conf /etc/supervisord.conf
 
 RUN chown -R kimai:kimai /var/www
-
-USER kimai
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
   CMD wget -q --spider http://localhost || exit 1
 
+# Start supervisor to launch both nginx + php-fpm
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
