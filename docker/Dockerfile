@@ -25,6 +25,9 @@ WORKDIR /var/www
 RUN rm -rf /var/www/*
 RUN git clone https://github.com/kevinpapst/kimai2.git .
 
+# Increase Composer memory limit
+ENV COMPOSER_MEMORY_LIMIT=-1
+
 RUN composer install --no-interaction
 
 # Stage 2 - Production
