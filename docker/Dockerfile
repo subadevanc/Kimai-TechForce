@@ -1,14 +1,24 @@
 # Stage 1 - Builder
 FROM php:8.2-fpm-alpine AS builder
 
-RUN apk add --no-cache git unzip libzip-dev
+RUN apk add --no-cache \
+    git \
+    unzip \
+    libzip-dev \
+    libxml2-dev \
+    icu-dev \
+    zlib-dev \
+    libpng-dev \
+    freetype-dev \
+    libjpeg-turbo-dev
 
-# Install PHP zip extension
-RUN docker-php-ext-install zip
+# Install PHP extensions
+RUN docker-php-ext-install zip intl xsl gd
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
+
 RUN rm -rf /var/www/*
 
 RUN git clone https://github.com/kevinpapst/kimai2.git .
