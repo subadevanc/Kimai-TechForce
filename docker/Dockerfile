@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install intl zip xml xsl gd
+    && docker-php-ext-install intl zip xml xsl gd pdo_mysql
 
 # Set working directory
 WORKDIR /var/www/html
