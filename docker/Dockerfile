@@ -6,10 +6,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libicu-dev \
     libxml2-dev \
+    libxslt-dev \
     libzip-dev \
     zlib1g-dev \
-    && docker-php-ext-install intl zip xml
-
+ && docker-php-ext-install intl zip xml xsl gd
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
