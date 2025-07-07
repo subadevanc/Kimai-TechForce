@@ -14,7 +14,7 @@ pipeline {
         stage('Build') {
             steps {
                 // Use 'sh' if on Linux Jenkins agent
-                bat "docker build -t ${IMAGE} ."
+                bat "docker build -t ${IMAGE} ./docker"
             }
         }
         stage('Test') {
