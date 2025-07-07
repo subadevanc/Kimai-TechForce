@@ -4,43 +4,30 @@ FROM php:8.2-apache
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    libzip-dev \
     libicu-dev \
-    libxslt1-dev \
+    libxml2-dev \
+    libzip-dev \
     zlib1g-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
- && docker-php-ext-install intl xsl zip gd
+    && docker-php-ext-install intl zip xml
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set working directory
-WORKDIR /var/www/html
+# Set DocumentRoot to /var/www/public
+ENV APACHE_DOCUMENT_ROOT /var/www/public
 
-# Clone Kimai source
+# Adjust Apache config
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+
+# Copy Kimai files
+WORKDIR /var/www
 RUN git clone https://github.com/kevinpapst/kimai2.git .
 
-# Set unlimited composer memory limit
-ENV COMPOSER_MEMORY_LIMIT=-1
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install composer dependencies
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --no-interaction --no-dev
+# Install Kimai dependencies
+RUN composer install --no-interaction
 
-# Configure Apache for Kimai
-RUN echo '<Directory /var/www/html/public>\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' > /etc/apache2/conf-available/kimai.conf \
- && a2enconf kimai
-
-# Set correct ownership
-RUN chown -R www-data:www-data /var/www/html
-
-# Expose port 80
-EXPOSE 80
-
-# Start Apache
-CMD ["apache2-foreground"]
+# Set correct permissions
+RUN chown -R www-data:www-data /var/www
