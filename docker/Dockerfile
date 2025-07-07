@@ -1,6 +1,10 @@
+# Stage 1 - Build dependencies
 FROM php:8.2-apache
 
-# Install dependencies
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -9,24 +13,31 @@ RUN apt-get update && apt-get install -y \
     libxslt-dev \
     libzip-dev \
     zlib1g-dev \
- && docker-php-ext-install intl zip xml xsl gd
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev
 
-# Set DocumentRoot to /var/www/public
-ENV APACHE_DOCUMENT_ROOT /var/www/public
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install intl zip xml xsl gd
 
-# Update Apache config
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+# Set working directory
+WORKDIR /var/www/html
+
+# Clone Kimai
+RUN rm -rf /var/www/html/* && git clone https://github.com/kevinpapst/kimai2.git .
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Download Kimai
-WORKDIR /var/www
-RUN rm -rf ./* && git clone https://github.com/kevinpapst/kimai2.git .
-# Install PHP dependencies
-RUN composer install --no-interaction
+# Increase memory limit
+ENV COMPOSER_MEMORY_LIMIT=-1
 
-# Fix permissions
-RUN chown -R www-data:www-data /var/www
+# Install PHP dependencies
+RUN composer install --no-interaction --no-dev
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/var
+
+# Expose port
+EXPOSE 80
