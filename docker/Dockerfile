@@ -7,37 +7,32 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libicu-dev \
     libxslt1-dev \
+    zlib1g-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    zlib1g-dev \
-    && docker-php-ext-install \
-        intl \
-        zip \
-        xsl \
-        gd
+    && docker-php-ext-install intl xsl zip gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www/html
-
 # Clone Kimai
+WORKDIR /var/www/html
 RUN git clone https://github.com/kevinpapst/kimai2.git .
-
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html/var
-
-# Increase Composer memory limit
-ENV COMPOSER_MEMORY_LIMIT=-1
-
-# Install PHP dependencies
 RUN composer install --no-interaction --no-dev
+
+# Apache config for Kimai (AllowOverride for .htaccess)
+RUN echo '<Directory /var/www/html/public>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' > /etc/apache2/conf-available/kimai.conf && \
+    a2enconf kimai
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html
 
 # Expose port
 EXPOSE 80
 
+# Start Apache
 CMD ["apache2-foreground"]
