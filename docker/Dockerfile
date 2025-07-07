@@ -24,8 +24,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Download Kimai
 WORKDIR /var/www
-RUN git clone https://github.com/kevinpapst/kimai2.git .
-
+RUN rm -rf ./* && git clone https://github.com/kevinpapst/kimai2.git .
 # Install PHP dependencies
 RUN composer install --no-interaction
 
