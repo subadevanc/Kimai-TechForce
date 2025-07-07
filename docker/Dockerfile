@@ -43,6 +43,11 @@ COPY --from=builder /var/www /var/www
 COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY ./supervisord.conf /etc/supervisord.conf
 
+# ✅ Fix: Create nginx folders and set ownership
+RUN mkdir -p /var/lib/nginx/tmp \
+    && mkdir -p /var/lib/nginx/logs \
+    && chown -R kimai:kimai /var/lib/nginx
+
 RUN chown -R kimai:kimai /var/www
 
 USER kimai
