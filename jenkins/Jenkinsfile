@@ -13,7 +13,8 @@ pipeline {
         }
         stage('Build') {
             steps {
-                bat 'docker build -t %IMAGE% ./docker'
+                // Use 'sh' if on Linux Jenkins agent
+                bat "docker build -t ${IMAGE} ."
             }
         }
         stage('Test') {
@@ -23,17 +24,18 @@ pipeline {
         }
         stage('Push') {
             steps {
-              withCredentials([string(credentialsId: 'dockerhub-pat', variable: 'DOCKER_TOKEN')]) {
-                 bat '''
-                 echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin
-                 docker push docker.io/kalaisk/kimai:%BUILD_NUMBER%
-                 '''
+                withCredentials([string(credentialsId: 'dockerhub-pat', variable: 'DOCKER_TOKEN')]) {
+                    bat """
+                    echo ${DOCKER_TOKEN} | docker login -u kalaisk --password-stdin
+                    docker push ${IMAGE}
+                    """
+                }
             }
         }
-   }
         stage('Deploy') {
             steps {
-                bat 'echo Deploy step: Consider using a Linux Jenkins agent for SSH deployment.'
+                bat 'docker rm -f kimai-container || exit 0'
+                bat "docker run -d --name kimai-container -p 8081:80 ${IMAGE}"
             }
         }
     }
