@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  kimai:
+    image: kalaisk/kimai:52
+    container_name: kimai-container
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - APP_ENV=prod
+      - TRUSTED_PROXIES=127.0.0.1
+    volumes:
+      - kimai-data:/opt/kimai/var
+    networks:
+      - kimai-net
+
+volumes:
+  kimai-data:
+
+networks:
+  kimai-net:
