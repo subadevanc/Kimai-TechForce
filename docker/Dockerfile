@@ -1,10 +1,13 @@
-# Stage 1 - Build dependencies
+# Stage 0 - Composer
+FROM composer:2 AS composer
+
+# Stage 1 - Build and runtime
 FROM php:8.2-apache
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# ✅ Set Apache DocumentRoot to /public
+# ✅ Set DocumentRoot to /public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 # Install system dependencies
@@ -30,8 +33,8 @@ WORKDIR /var/www/html
 # Clone Kimai
 RUN rm -rf /var/www/html/* && git clone https://github.com/kevinpapst/kimai2.git .
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Copy Composer from first stage
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 # Increase memory limit
 ENV COMPOSER_MEMORY_LIMIT=-1
@@ -42,5 +45,4 @@ RUN composer install --no-interaction --no-dev
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/var
 
-# Expose port
 EXPOSE 80
