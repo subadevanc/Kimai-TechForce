@@ -1,0 +1,31 @@
+version: '3.4'
+
+services:
+  kimai:
+    image: kevinpapst/kimai2:apache
+    ports:
+      - "8080:8001"
+    environment:
+      - APP_ENV=prod
+      - TRUSTED_PROXIES=127.0.0.1
+      - DATABASE_URL=mysql://kimai:kimai@db/kimai
+    depends_on:
+      - db
+    volumes:
+      - kimai_public:/opt/kimai/public
+      - kimai_var:/opt/kimai/var
+
+  db:
+    image: mariadb:10.4
+    environment:
+      - MYSQL_DATABASE=kimai
+      - MYSQL_USER=kimai
+      - MYSQL_PASSWORD=kimai
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - kimai_db:/var/lib/mysql
+
+volumes:
+  kimai_db:
+  kimai_public:
+  kimai_var:
