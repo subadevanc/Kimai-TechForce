@@ -1,39 +1,21 @@
 pipeline {
     agent any
-    environment {
-        REGISTRY = 'docker.io'
-        REPO = 'kalaisk/kimai'
-        IMAGE = "${REGISTRY}/${REPO}:${BUILD_NUMBER}"
-    }
+
     stages {
-        stage('Checkout') {
+        stage('Build Image') {
             steps {
-                git branch: 'main', url: 'https://github.com/subadevanc/Kimai-TechForce.git'
-            }
-        }
-        stage('Build') {
-            steps {
-                bat 'docker build -t %IMAGE% ./docker'
-            }
-        }
-        stage('Test') {
-            steps {
-                bat 'echo Running simulated tests...'
-            }
-        }
-        stage('Push') {
-            steps {
-                withCredentials([string(credentialsId: 'dockerhub-pat', variable: 'DOCKER_TOKEN')]) {
-                    bat '''
-                    echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin
-                    docker push %IMAGE%
-                    '''
+                dir('docker') {
+                    bat 'docker build -t kalaisk/kimai-html:latest .'
                 }
             }
         }
-        stage('Deploy') {
+
+        stage('Push to DockerHub') {
             steps {
-                bat 'echo Deploy step: manual or scripted deployment here.'
+                withCredentials([string(credentialsId: 'docker-token', variable: 'DOCKER_TOKEN')]) {
+                    bat 'echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin'
+                    bat 'docker push kalaisk/kimai-html:latest'
+                }
             }
         }
     }
