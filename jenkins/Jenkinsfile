@@ -1,20 +1,38 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'kalaisk/kimai-html:latest'
+    }
+
     stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/subadevanc/Kimai-TechForce.git'
+            }
+        }
+
         stage('Build Image') {
             steps {
                 dir('docker') {
-                    bat 'docker build -t kalaisk/kimai-html:latest .'
+                    bat "docker build -t ${env.IMAGE_NAME} ."
                 }
             }
         }
 
         stage('Push to DockerHub') {
             steps {
-               withCredentials([usernamePassword(credentialsId: 'docker-token', ...)]) {
-                    bat 'echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin'
-                    bat 'docker push kalaisk/kimai-html:latest'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker-token',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    bat """
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        docker push ${env.IMAGE_NAME}
+                    """
                 }
             }
         }
