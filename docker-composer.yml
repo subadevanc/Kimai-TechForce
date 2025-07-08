@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   kimai:
-    image: kalaisk/kimai:52
+    image: kalaisk/kimai:latest
     container_name: kimai-container
     restart: always
     ports:
