@@ -12,7 +12,7 @@ pipeline {
 
         stage('Push to DockerHub') {
             steps {
-                withCredentials([string(credentialsId: 'docker-token', variable: 'DOCKER_TOKEN')]) {
+               withCredentials([usernamePassword(credentialsId: 'docker-token', ...)]) {
                     bat 'echo %DOCKER_TOKEN% | docker login -u kalaisk --password-stdin'
                     bat 'docker push kalaisk/kimai-html:latest'
                 }
