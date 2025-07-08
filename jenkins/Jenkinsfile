@@ -8,30 +8,24 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url:'https://github.com/subadevanc/Kimai-TechForce.git'
+                git branch: 'main', url: 'https://github.com/subadevanc/Kimai-TechForce.git'
             }
         }
 
         stage('Build Image') {
             steps {
                 dir('docker') {
-                    bat "docker build -t ${env.IMAGE_NAME} ."
+                    bat "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
 
         stage('Push to DockerHub') {
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'docker-token',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-token', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     bat """
                         echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                        docker push ${env.IMAGE_NAME}
+                        docker push ${IMAGE_NAME}
                     """
                 }
             }
