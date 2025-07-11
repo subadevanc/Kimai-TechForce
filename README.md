@@ -2,7 +2,7 @@
 
 Kimai-TechForce is a secure, cloud-native migration of the [Kimai](https://www.kimai.org/) time-tracking software—fully containerized, automated with CI/CD pipelines, and backed by robust infrastructure as code and multi-cloud monitoring.
 
-> 📅 Project Started: 10-07-2025  
+> 📅 Project Started: 27-06-2025  
 > 
 
 ---
@@ -106,7 +106,6 @@ docker run -d -p 80:80 kimai-html
 - **Modules**:
   - `network/` – VPC, subnets
   - `compute/` – EC2 for App, Jenkins, Bastion
-  - `security/` – IAM roles, Security Groups
 
 ### Commands:
 
@@ -140,7 +139,7 @@ terraform apply
 ## 🌐 Live Demo
 
 ✅ Deployed at:  
-`http://13.60.234.66` → Automatically redirects to [https://www.kimai.org/](https://www.kimai.org/)
+`http://13.60.234.66` our Kimai Application
 
 ---
 
@@ -151,15 +150,3 @@ terraform apply
 - Grafana-SNS pipeline ensures proactive infrastructure monitoring
 
 ---
-
-## 📜 License
-
-This project is licensed under the MIT License.  
-See [LICENSE](LICENSE) for details.
-
----
-
-## 🙌 Contribute
-
-Pull requests and feedback are welcome!  
-Feel free to open an [issue](https://github.com/subadevanc/Kimai-TechForce/issues) or submit a PR.
